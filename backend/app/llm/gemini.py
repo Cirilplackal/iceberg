@@ -17,7 +17,9 @@ model = genai.GenerativeModel(
 
 
 
-async def generate_response(prompt: str):
-    response = model.generate_content(prompt)
-    return response.text
+async def stream_response(prompt: str):
+    response = model.generate_content(prompt,stream=True)
+    for chunk in response:
+        if chunk.text:
+            yield chunk.text
 

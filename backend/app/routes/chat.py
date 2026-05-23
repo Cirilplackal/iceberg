@@ -1,7 +1,9 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
 
-from app.llm.gemini import generate_response
+from sse_starlette.sse import EventSourceResponse
+
+from app.llm.gemini import stream_response
 
 router = APIRouter()
 
@@ -13,10 +15,15 @@ class ChatRequest(BaseModel):
 @router.post("/chat")
 async def chat(request: ChatRequest):
 
-    response = await generate_response(
-        request.message
-    )
+    async def event_generator():
 
-    return {
-        "response": response
-    }
+        async for chunk in stream_response(
+            request.message
+        ):
+            yield {
+                "data": chunk
+            }
+
+    return EventSourceResponse(
+        event_generator()
+    )
