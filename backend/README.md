@@ -24,12 +24,6 @@ FastAPI service for Gemini chat (streaming), PDF ingestion, and retrieval-augmen
    pip install -r requirements.txt
    ```
 
-   The app also uses packages that may need to be installed separately if not already present:
-
-   ```powershell
-   pip install qdrant-client sentence-transformers sse-starlette pymupdf langchain-text-splitters
-   ```
-
 3. Create a `.env` file in `backend/`:
 
    ```env
