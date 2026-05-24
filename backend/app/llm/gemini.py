@@ -9,12 +9,7 @@ genai.configure(
     api_key=os.getenv("GEMINI_API_KEY")
 )
 
-model = genai.GenerativeModel(
-    "gemini-2.5-flash"
-)
-
-
-
+model = genai.GenerativeModel("gemini-2.5-flash")
 
 
 async def stream_response(prompt: str):
@@ -22,4 +17,5 @@ async def stream_response(prompt: str):
     for chunk in response:
         if chunk.text:
             yield chunk.text
+
 
