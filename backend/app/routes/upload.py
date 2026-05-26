@@ -13,9 +13,12 @@ from app.rag.vectorstore.ingestion import (
     store_embeddings
 )
 
-from app.rag.chunking.splitter import (
-    chunk_text
-)
+# from app.rag.chunking.splitter import (
+#     chunk_text
+# )
+
+from app.rag.chunking.smart_chunker import smart_chunk_text
+
 
 from fastapi import APIRouter, UploadFile, File
 
@@ -48,15 +51,17 @@ async def upload_pdf(
     extracted_text = extract_text_from_pdf(
         file_path
     )
-    
-    chunks = chunk_text(extracted_text)
+
+    # chunks = chunk_text(extracted_text)
+
+    chunks = smart_chunk_text(extracted_text)
 
     embeddings = generate_embeddings(chunks)
 
-    #creating collection in qdrant
+    # creating collection in qdrant
     create_collection()
 
-    #storing embeddings in qdrant
+    # storing embeddings in qdrant
     store_embeddings(
         chunks=chunks,
         embeddings=embeddings,

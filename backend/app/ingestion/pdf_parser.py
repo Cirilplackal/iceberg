@@ -1,4 +1,27 @@
+import re
+
 import fitz
+
+
+def clean_extracted_text(text: str):
+
+    # REMOVE EXCESSIVE WHITESPACE
+
+    text = re.sub(r"\s+", " ", text)
+
+    # REMOVE PAGE NUMBER LINES
+
+    text = re.sub(r"\b\d+\b", "", text)
+
+    # REMOVE COMMON FOOTER PATTERNS
+
+    footer_patterns = [r"To find out more.*?", r"www\..*?", r"email .*?", r"policy@.*?"]
+
+    for pattern in footer_patterns:
+
+        text = re.sub(pattern, "", text, flags=re.IGNORECASE)
+
+    return text.strip()
 
 
 def extract_text_from_pdf(file_path: str):
@@ -9,6 +32,10 @@ def extract_text_from_pdf(file_path: str):
 
     for page in document:
 
-        full_text += page.get_text()
+        text = page.get_text()
+
+        cleaned = clean_extracted_text(text)
+
+        full_text += cleaned + "\n"
 
     return full_text

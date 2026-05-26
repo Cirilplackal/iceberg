@@ -18,6 +18,9 @@ import { StatusIndicator } from "@/components/StatusIndicator";
 import { askIceberg } from "@/services/rag";
 import type { Source } from "@/types/rag";
 
+
+import { MarkdownRenderer } from "@/components/MarkdownRenderer";
+
 type Message = {
   role: "user" | "assistant";
   content: string;
@@ -147,7 +150,7 @@ export function ChatPanel() {
               {message.role === "user" ? (
                 <div className="flex justify-end">
                   <div className="max-w-[min(88%,42rem)] rounded-2xl rounded-br-sm border border-white/[0.08] bg-zinc-900/80 px-3.5 py-2.5 text-sm leading-relaxed text-zinc-200">
-                    {message.content}
+                    <MarkdownRenderer content={message.content} />
                   </div>
                 </div>
               ) : (
@@ -208,7 +211,9 @@ export function ChatPanel() {
             <div className="max-w-2xl space-y-3 rounded-lg border border-white/[0.06] bg-white/[0.02] p-3">
               <div className="flex items-center gap-2">
                 <Loader2 className="size-3.5 animate-spin text-zinc-400" />
-                <span className="text-shimmer text-sm">Running RAG pipeline</span>
+                <span className="text-shimmer text-sm">
+                  Running RAG pipeline
+                </span>
               </div>
               <PipelineSteps activeStep={pipelineStep} />
             </div>
