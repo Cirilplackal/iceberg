@@ -1,132 +1,492 @@
 # Iceberg AI
 
-Hybrid **retrieval-augmented generation (RAG)** platform for grounded, citation-aware research. Upload PDFs, query a vector knowledge base, and get answers backed by transparent source citations and similarity scores.
+Hybrid **Retrieval-Augmented Generation (RAG)** platform for grounded, citation-aware AI research.
+Upload PDFs, build a semantic knowledge base, perform hybrid retrieval, rerank results, and generate context-grounded answers with transparent citations.
 
-## Architecture
+---
 
+# Features
+
+- PDF ingestion & semantic indexing
+- Hybrid retrieval (Semantic + BM25)
+- Cross-encoder reranking
+- Grounded Gemini responses
+- Citation-aware responses
+- Streaming AI responses (SSE)
+- Metadata-aware retrieval filtering
+- Smart chunking with overlap preservation
+- Modular AI infrastructure architecture
+- Qdrant Cloud vector database integration
+- AI dashboard frontend
+
+---
+
+# System Architecture
+
+```text
+┌───────────────────────────────────────────────────────────────┐
+│                       Frontend Layer                          │
+│                 Next.js + React + Tailwind                   │
+│                                                               │
+│  · AI Dashboard                                               │
+│  · PDF Upload UI                                              │
+│  · Citation-aware Research Chat                               │
+│  · Streaming Responses                                        │
+└──────────────────────────────┬────────────────────────────────┘
+                               │
+                               ▼
+┌───────────────────────────────────────────────────────────────┐
+│                       Backend API Layer                       │
+│                      FastAPI + Python                         │
+│                                                               │
+│  /upload        → PDF ingestion                               │
+│  /rag           → grounded response + citations               │
+│  /rag/stream    → streaming grounded response                 │
+│  /chat          → general Gemini streaming chat               │
+└───────────────┬───────────────────────────────┬───────────────┘
+                │                               │
+                ▼                               ▼
+
+     ┌────────────────────┐         ┌────────────────────┐
+     │    Retrieval Core  │         │      Gemini LLM    │
+     │                    │         │  gemini-2.5-flash  │
+     └─────────┬──────────┘         └────────────────────┘
+               │
+               ▼
+
+┌───────────────────────────────────────────────────────────────┐
+│                    Hybrid RAG Pipeline                        │
+└───────────────────────────────────────────────────────────────┘
+               │
+               ▼
+
+      ┌─────────────────────────────┐
+      │      Document Ingestion     │
+      │                             │
+      │ PDF → Extraction → Cleaning │
+      │      → Chunking             │
+      └──────────────┬──────────────┘
+                     │
+                     ▼
+
+      ┌─────────────────────────────┐
+      │      Embedding Layer        │
+      │ SentenceTransformers        │
+      │ all-MiniLM-L6-v2            │
+      └──────────────┬──────────────┘
+                     │
+                     ▼
+
+      ┌─────────────────────────────┐
+      │        Vector Store         │
+      │          Qdrant             │
+      └──────────────┬──────────────┘
+                     │
+                     ▼
+
+      ┌─────────────────────────────┐
+      │      Retrieval Pipeline     │
+      │                             │
+      │  Semantic Retrieval         │
+      │  +                          │
+      │  BM25 Retrieval             │
+      │  +                          │
+      │  Hybrid Fusion              │
+      │  +                          │
+      │  Cross-Encoder Reranking    │
+      └──────────────┬──────────────┘
+                     │
+                     ▼
+
+      ┌─────────────────────────────┐
+      │      Context Builder        │
+      │  Prompt + Citations         │
+      └──────────────┬──────────────┘
+                     │
+                     ▼
+
+      ┌─────────────────────────────┐
+      │      Grounded Response      │
+      └─────────────────────────────┘
 ```
-┌─────────────────────────────────────────────────────────────┐
-│  Frontend (Next.js)          http://localhost:3000          │
-│  · PDF upload UI                                            │
-│  · Citation-aware research chat                             │
-└──────────────────────────┬──────────────────────────────────┘
-                           │
-                           ▼
-┌─────────────────────────────────────────────────────────────┐
-│  Backend (FastAPI)           http://localhost:8000          │
-│  · /upload   — ingest PDFs                                  │
-│  · /rag      — grounded Q&A + sources (JSON)              │
-│  · /rag/stream — streaming answers (SSE)                    │
-│  · /chat     — general Gemini chat (SSE)                    │
-└──────────┬─────────────────────────────┬────────────────────┘
-           │                             │
-           ▼                             ▼
-    ┌──────────────┐              ┌──────────────┐
-    │   Qdrant     │              │ Gemini 2.5   │
-    │ vector store │              │   Flash      │
-    └──────────────┘              └──────────────┘
+
+---
+
+# Technology Stack
+
+
+| Layer              | Technology                              |
+| ------------------ | --------------------------------------- |
+| Frontend           | Next.js 16                              |
+| UI                 | React 19                                |
+| Styling            | Tailwind CSS v4                         |
+| Components         | shadcn/ui                               |
+| Backend API        | FastAPI                                 |
+| Streaming          | sse-starlette                           |
+| LLM                | Google Gemini 2.5 Flash                 |
+| Embeddings         | SentenceTransformers                    |
+| Embedding Model    | `all-MiniLM-L6-v2`                      |
+| Vector Database    | Qdrant                                  |
+| PDF Parsing        | PyMuPDF                                 |
+| Document Loading   | LangChain                               |
+| Semantic Retrieval | Cosine similarity search                |
+| Lexical Retrieval  | rank-bm25                               |
+| Reranking          | CrossEncoder (`ms-marco-MiniLM-L-6-v2`) |
+| Runtime            | Python 3.10+                            |
+
+
+---
+
+# Retrieval Architecture
+
+Iceberg uses a **multi-stage retrieval pipeline**.
+
+```text
+User Query
+     │
+     ▼
+
+┌─────────────────────┐
+│ Query Embedding     │
+└─────────┬───────────┘
+          │
+          ▼
+
+ ┌───────────────────┐
+ │ Semantic Search   │
+ │ (Qdrant)          │
+ └─────────┬─────────┘
+           │
+
+ ┌───────────────────┐
+ │ BM25 Search       │
+ │ (Keyword Search)  │
+ └─────────┬─────────┘
+           │
+
+           ▼
+   Hybrid Result Fusion
+           │
+           ▼
+
+ ┌───────────────────┐
+ │ Cross Encoder     │
+ │ Reranker          │
+ └─────────┬─────────┘
+           │
+           ▼
+
+     Best Chunks
+           │
+           ▼
+
+   Gemini Grounding
+           │
+           ▼
+
+     Final Answer
 ```
 
-| Layer        | Stack                                      |
-|--------------|--------------------------------------------|
-| Frontend     | Next.js 16, React 19, Tailwind 4, shadcn |
-| Backend      | FastAPI, Python 3.10+                      |
-| Embeddings   | `all-MiniLM-L6-v2` (384-dim)               |
-| Vector DB    | Qdrant                                     |
-| LLM          | Google Gemini (`gemini-2.5-flash`)         |
-| PDF parsing  | PyMuPDF                                    |
+---
 
-## Quick start
+# RAG Pipeline
 
-### 1. Backend
+## 1. Document Upload
+
+PDFs are uploaded through `/upload`.
+
+Pipeline:
+
+```text
+PDF
+ ↓
+Text Extraction
+ ↓
+Cleaning
+ ↓
+Smart Chunking
+ ↓
+Embedding Generation
+ ↓
+Qdrant Storage
+```
+
+---
+
+## 2. Smart Chunking
+
+Iceberg uses:
+
+- overlap preservation
+- paragraph-aware chunking
+- semantic continuity preservation
+
+Default:
+
+
+| Setting    | Value |
+| ---------- | ----- |
+| Chunk Size | 800   |
+| Overlap    | 150   |
+
+
+---
+
+## 3. Embedding Generation
+
+Each chunk is embedded using:
+
+```text
+all-MiniLM-L6-v2
+```
+
+Output:
+
+```text
+384-dimensional vectors
+```
+
+---
+
+## 4. Hybrid Retrieval
+
+Iceberg performs:
+
+### Semantic Retrieval
+
+Meaning-based vector similarity search.
+
+### BM25 Retrieval
+
+Exact keyword-based lexical retrieval.
+
+### Hybrid Fusion
+
+Results are merged and deduplicated.
+
+---
+
+## 5. Reranking
+
+Candidate chunks are reranked using:
+
+```text
+cross-encoder/ms-marco-MiniLM-L-6-v2
+```
+
+This improves:
+
+- relevance precision
+- grounding quality
+- citation quality
+
+---
+
+## 6. Grounded Generation
+
+Final chunks are injected into a Gemini prompt.
+
+The LLM generates:
+
+- grounded answers
+- source-aware responses
+- citation-backed outputs
+
+---
+
+# Backend Setup
+
+## 1. Create Virtual Environment
 
 ```powershell
 cd backend
+
 python -m venv .venv
+
 .\.venv\Scripts\Activate.ps1
+```
+
+---
+
+## 2. Install Dependencies
+
+```powershell
 pip install -r requirements.txt
 ```
 
-Create `backend/.env`:
+---
+
+## 3. Configure Environment Variables
+
+Create:
+
+```text
+backend/.env
+```
 
 ```env
 GEMINI_API_KEY=your_gemini_api_key
-QDRANT_URL=https://your-cluster.qdrant.io
+
+QDRANT_URL=https://your-qdrant-cluster.qdrant.io
+
 QDRANT_API_KEY=your_qdrant_api_key
 ```
+
+---
+
+## 4. Start Backend
 
 ```powershell
 uvicorn app.main:app --reload
 ```
 
-API docs: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
+Backend:
 
-### 2. Frontend
+```text
+http://127.0.0.1:8000
+```
+
+Swagger Docs:
+
+```text
+http://127.0.0.1:8000/docs
+```
+
+---
+
+# Frontend Setup
+
+## 1. Install Dependencies
 
 ```bash
 cd frontend
+
 npm install
+```
+
+---
+
+## 2. Start Frontend
+
+```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000)
+Frontend:
 
-## RAG pipeline
-
-1. **Upload** — PDF text is extracted, split into chunks (1000 chars, 200 overlap), and embedded.
-2. **Store** — Vectors and metadata (`text`, `filename`, `chunk_index`) are upserted into Qdrant collection `iceberg_documents`.
-3. **Query** — User question is embedded; top-3 chunks are retrieved (optional filename filter, score threshold ≥ 0.7).
-4. **Generate** — Retrieved context is passed to Gemini for a grounded answer.
-5. **Cite** — Frontend renders answer + ranked source cards (filename, score, preview).
-
-## Project structure
-
+```text
+http://localhost:3000
 ```
+
+---
+
+# API Overview
+
+
+| Endpoint      | Method | Purpose                       |
+| ------------- | ------ | ----------------------------- |
+| `/upload`     | POST   | Upload & ingest PDFs          |
+| `/rag`        | POST   | Grounded response + citations |
+| `/rag/stream` | POST   | Streaming grounded response   |
+| `/chat`       | POST   | General Gemini streaming chat |
+
+
+---
+
+# Current Project Structure
+
+```text
 iceberg/
-├── backend/          # FastAPI API, RAG pipeline, Qdrant ingestion
+│
+├── backend/
+│   │
 │   ├── app/
-│   │   ├── routes/   # chat, upload, rag, rag_stream
-│   │   ├── rag/      # chunking, embeddings, retrieval, services
-│   │   ├── llm/      # Gemini client
-│   │   └── ingestion/
-│   └── README.md
-├── frontend/         # Next.js dashboard
+│   │   │
+│   │   ├── routes/
+│   │   │    ├── upload.py
+│   │   │    ├── rag.py
+│   │   │    ├── rag_stream.py
+│   │   │    └── chat.py
+│   │   │
+│   │   ├── rag/
+│   │   │    │
+│   │   │    ├── chunking/
+│   │   │    ├── embeddings/
+│   │   │    ├── retrieval/
+│   │   │    ├── services/
+│   │   │    └── vectorstore/
+│   │   │
+│   │   ├── ingestion/
+│   │   └── llm/
+│   │
+│   ├── uploads/
+│   │
+│   ├── test_qdrant.py
+│   ├── test_search.py
+│   ├── test_bm25.py
+│   ├── test_hybrid.py
+│   └── test_reranker.py
+│
+├── frontend/
+│   │
 │   ├── src/
-│   │   ├── components/   # ChatPanel, UploadPanel, SourceCard
-│   │   ├── services/     # askIceberg()
+│   │   ├── components/
+│   │   ├── services/
 │   │   └── types/
-│   └── README.md
+│   │
+│   └── app/
+│
 └── README.md
 ```
 
-## API overview
+---
 
-| Endpoint           | Method | Description                          |
-|--------------------|--------|--------------------------------------|
-| `/upload`          | POST   | Ingest PDF into Qdrant               |
-| `/rag`             | POST   | Grounded answer + `sources` (JSON)   |
-| `/rag/stream`      | POST   | Stream answer tokens (SSE, no sources) |
-| `/chat`            | POST   | General Gemini chat (SSE)            |
+# Engineering Challenges Solved
 
-The dashboard uses **`/rag`** for citation-aware research. Streaming endpoints are available for future UX.
 
-## Documentation
+| Problem                    | Resolution                        |
+| -------------------------- | --------------------------------- |
+| BM25 noisy retrieval       | Metadata-aware filtering          |
+| Giant document chunks      | Smart chunking pipeline           |
+| Retrieval contamination    | Filename-scoped retrieval         |
+| PDF layout noise           | Cleaning + structured ingestion   |
+| Poor retrieval precision   | Hybrid retrieval + reranking      |
+| Streaming architecture     | SSE async pipeline                |
 
-- [Backend setup & API](backend/README.md)
-- [Frontend setup & UI](frontend/README.md)
 
-## Environment variables
+---
 
-| Variable         | Where    | Required | Description           |
-|------------------|----------|----------|-----------------------|
-| `GEMINI_API_KEY` | backend  | Yes      | Google Gemini API key |
-| `QDRANT_URL`     | backend  | Yes      | Qdrant cluster URL    |
-| `QDRANT_API_KEY` | backend  | Yes*     | Qdrant API key        |
+# Current Capabilities
 
-\* Required for Qdrant Cloud.
+Iceberg currently supports:
 
-Do not commit `.env` files.
+- Hybrid Retrieval
+- Semantic Search
+- BM25 Keyword Search
+- Cross-Encoder Reranking
+- Citation-aware Responses
+- Streaming AI Responses
+- Metadata Filtering
+- Smart Chunking
+- Qdrant Cloud Integration
+- Modular RAG Architecture
 
-## License
+---
 
-Private project — add a license if open-sourcing.
+# Roadmap
+
+Upcoming architecture evolution:
+
+- Conversation memory
+- Session-aware retrieval
+- Multi-document workspaces
+- Async ingestion pipelines
+- Evaluation & observability
+- LangGraph agent workflows
+- Local model support (Ollama)
+- Multi-model routing
+- Retrieval tracing
+- Production monitoring
+
+---
+
