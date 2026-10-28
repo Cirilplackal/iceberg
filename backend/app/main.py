@@ -6,8 +6,11 @@ from app.routes.rag import router as rag_router
 from app.routes.rag_stream import router as rag_stream_router
 from fastapi.middleware.cors import CORSMiddleware
 
+# The app entry point for the FastAPI backend.
+# This is where all API routers are registered and cross-origin requests are allowed.
 app = FastAPI(title="Iceberg AI")
 
+# Allow the frontend running on localhost:3000 to call the API during local development.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -19,6 +22,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Register feature modules: chat, PDF upload, RAG generation, and streaming responses.
 app.include_router(chat_router)
 app.include_router(upload_router)
 app.include_router(rag_router)

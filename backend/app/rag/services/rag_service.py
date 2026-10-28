@@ -6,7 +6,8 @@ from app.llm.gemini import stream_response
 
 
 def build_rag_prompt(query: str, search_results):
-
+    # Combine the retrieved document chunks into one context block.
+    # This lets the model answer using only the most relevant passages rather than guessing.
     context = "\n\n".join([result.payload["text"] for result in search_results])
 
     prompt = f"""
@@ -29,29 +30,19 @@ Question:
 
 
 async def generate_rag_response(query: str, filename: str = None):
-
-    # STEP 1
-    # Semantic Retrieval
-
+    # Step 1: retrieve the most relevant document chunks from the vector store.
     search_results = search_documents(query=query, filename=filename)
 
     if not search_results:
         return {"answer": ("No relevant information " "was found."), "sources": []}
 
-    # STEP 2
-    # Build RAG Prompt
-
+    # Step 2: turn retrieved chunks into a grounded prompt for Gemini.
     prompt = build_rag_prompt(query=query, search_results=search_results)
 
-    # STEP 3
-    # Gemini Generation
-
+    # Step 3: ask Gemini to answer using only the retrieved context.
     response = model.generate_content(prompt)
 
-    # STEP 4
-    # Return Grounded Response
-    # with Sources
-
+    # Step 4: return the answer and source metadata for citation display in the UI.
     return {
         "answer": response.text,
         "sources": [
@@ -67,26 +58,16 @@ async def generate_rag_response(query: str, filename: str = None):
 
 
 async def stream_rag_response(query: str):
-
-    # STEP 1
-    # Semantic Retrieval
-
+    # Step 1: fetch relevant document chunks for the query.
     search_results = search_documents(query)
 
     if not search_results:
-
         yield "No relevant information was found in the knowledge base."
-
         return
 
-    # STEP 2
-    # Build Grounded Prompt
-
+    # Step 2: build a context-aware prompt before streaming the answer.
     prompt = build_rag_prompt(query=query, search_results=search_results)
 
-    # STEP 3
-    # Stream Gemini Response
-
+    # Step 3: stream the Gemini output chunk by chunk to the frontend.
     async for chunk in stream_response(prompt):
-
         yield chunk

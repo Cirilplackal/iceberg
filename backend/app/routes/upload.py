@@ -32,36 +32,33 @@ UPLOAD_DIR = "uploads"
 
 
 @router.post("/upload")
-
 async def upload_pdf(
     file: UploadFile = File(...)
 ):
-
+    # Save the uploaded PDF locally before processing it.
     file_path = os.path.join(
         UPLOAD_DIR,
         file.filename
     )
 
     with open(file_path, "wb") as buffer:
-
         content = await file.read()
-
         buffer.write(content)
 
-    extracted_text = extract_text_from_pdf(
-        file_path
-    )
+    # Extract text from the PDF so it can be split into searchable chunks.
+    extracted_text = extract_text_from_pdf(file_path)
 
-    # chunks = chunk_text(extracted_text)
-
+    # Use smart chunking to preserve context while keeping chunks digestible for retrieval.
+    # The older chunk_text() alternative is kept as a reference in comments.
     chunks = smart_chunk_text(extracted_text)
 
+    # Convert each chunk into a vector representation for semantic retrieval.
     embeddings = generate_embeddings(chunks)
 
-    # creating collection in qdrant
+    # Ensure the Qdrant collection exists before inserting new vectors.
     create_collection()
 
-    # storing embeddings in qdrant
+    # Store the chunks and their embeddings, with the source filename attached as metadata.
     store_embeddings(
         chunks=chunks,
         embeddings=embeddings,

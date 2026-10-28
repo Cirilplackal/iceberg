@@ -3,6 +3,88 @@
 Hybrid **Retrieval-Augmented Generation (RAG)** platform for grounded, citation-aware AI research.
 Upload PDFs, build a semantic knowledge base, perform hybrid retrieval, rerank results, and generate context-grounded answers with transparent citations.
 
+This is a full-stack project: the Python backend handles ingestion, retrieval, and Gemini grounding, while the Next.js frontend provides the upload and chat experience.
+
+---
+
+# Quick Start
+
+## Prerequisites
+
+- Python 3.10+
+- Node.js 18+
+- npm
+- A Google Gemini API key
+- A Qdrant instance (cloud or local)
+
+## 1) Start the backend
+
+Open a terminal in the project root and run:
+
+```powershell
+# Go to the backend folder
+cd backend
+
+# Create a local Python environment
+python -m venv .venv
+
+# Activate it on Windows PowerShell
+.\.venv\Scripts\Activate.ps1
+
+# Install backend dependencies
+pip install -r requirements.txt
+```
+
+Create a local environment file at `backend/.env`:
+
+```env
+# backend/.env
+GEMINI_API_KEY=your_gemini_api_key
+QDRANT_URL=https://your-qdrant-cluster.qdrant.io
+QDRANT_API_KEY=your_qdrant_api_key
+```
+
+Then start the API server:
+
+```powershell
+# Run the FastAPI app with hot reload enabled
+uvicorn app.main:app --reload
+```
+
+The backend will be available at:
+
+- API: `http://127.0.0.1:8000`
+- Swagger docs: `http://127.0.0.1:8000/docs`
+
+## 2) Start the frontend
+
+Open a second terminal and run:
+
+```bash
+# Move into the frontend app
+cd frontend
+
+# Install all frontend dependencies
+npm install
+
+# Start the Next.js development server
+npm run dev
+```
+
+The frontend will be available at:
+
+- Web app: `http://localhost:3000`
+
+## 3) Use the app
+
+1. Open the frontend in the browser.
+2. Upload a PDF document.
+3. Wait for ingestion and indexing to complete.
+4. Ask a question about the uploaded document.
+5. Review the generated answer and source citations.
+
+> In practice, both services need to run at the same time: the frontend sends requests to the backend API, and the backend connects to Gemini and Qdrant.
+
 ---
 
 # Features
@@ -296,57 +378,59 @@ The LLM generates:
 
 # Backend Setup
 
-## 1. Create Virtual Environment
+## 1. Create a virtual environment
 
 ```powershell
+# Move into the backend folder
 cd backend
 
+# Create a local environment for Python packages
 python -m venv .venv
 
+# Activate it on Windows PowerShell
 .\.venv\Scripts\Activate.ps1
 ```
 
 ---
 
-## 2. Install Dependencies
+## 2. Install Python dependencies
 
 ```powershell
+# Install the API and retrieval dependencies
 pip install -r requirements.txt
 ```
 
 ---
 
-## 3. Configure Environment Variables
+## 3. Configure environment variables
 
-Create:
-
-```text
-backend/.env
-```
+Create the file `backend/.env` with the values below:
 
 ```env
+# backend/.env
 GEMINI_API_KEY=your_gemini_api_key
-
 QDRANT_URL=https://your-qdrant-cluster.qdrant.io
-
 QDRANT_API_KEY=your_qdrant_api_key
 ```
 
+If you are running Qdrant locally instead of in the cloud, replace `QDRANT_URL` with your local URL such as `http://localhost:6333`.
+
 ---
 
-## 4. Start Backend
+## 4. Start the backend
 
 ```powershell
+# Start the FastAPI backend with auto-reload enabled
 uvicorn app.main:app --reload
 ```
 
-Backend:
+The backend will be available at:
 
 ```text
 http://127.0.0.1:8000
 ```
 
-Swagger Docs:
+Swagger docs are available at:
 
 ```text
 http://127.0.0.1:8000/docs
@@ -356,23 +440,26 @@ http://127.0.0.1:8000/docs
 
 # Frontend Setup
 
-## 1. Install Dependencies
+## 1. Install frontend dependencies
 
 ```bash
+# Go to the frontend app
 cd frontend
 
+# Install Next.js and UI dependencies
 npm install
 ```
 
 ---
 
-## 2. Start Frontend
+## 2. Start the frontend
 
 ```bash
+# Run the frontend in development mode
 npm run dev
 ```
 
-Frontend:
+The frontend will be available at:
 
 ```text
 http://localhost:3000

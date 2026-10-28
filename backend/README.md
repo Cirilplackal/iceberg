@@ -13,20 +13,27 @@ FastAPI service for Gemini chat (streaming), PDF ingestion, and retrieval-augmen
 1. Create and activate a virtual environment:
 
    ```powershell
+   # Move into the backend folder
    cd backend
+
+   # Create an isolated Python environment for this project
    python -m venv .venv
+
+   # Activate the environment in PowerShell
    .\.venv\Scripts\Activate.ps1
    ```
 
 2. Install dependencies:
 
    ```powershell
+   # Install the required Python libraries for the API, embeddings, and retrieval stack
    pip install -r requirements.txt
    ```
 
 3. Create a `.env` file in `backend/`:
 
    ```env
+   # backend/.env
    GEMINI_API_KEY=your_gemini_api_key
    QDRANT_URL=https://your-cluster.qdrant.io
    QDRANT_API_KEY=your_qdrant_api_key
@@ -34,13 +41,19 @@ FastAPI service for Gemini chat (streaming), PDF ingestion, and retrieval-augmen
 
    Do not commit `.env` (it is listed in `.gitignore`).
 
-4. Ensure the `uploads/` directory exists (PDFs are saved there on upload).
+4. Ensure the `uploads/` directory exists (PDFs are saved there on upload):
+
+   ```powershell
+   # This folder stores uploaded PDFs before they are parsed and indexed
+   mkdir uploads
+   ```
 
 ## Run
 
 From the `backend/` directory (with the venv activated):
 
 ```powershell
+# Start the API with auto-reload enabled for local development
 uvicorn app.main:app --reload
 ```
 
