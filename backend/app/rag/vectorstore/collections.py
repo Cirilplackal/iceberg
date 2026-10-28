@@ -1,9 +1,10 @@
 from qdrant_client.models import VectorParams, Distance, PayloadSchemaType
 
+from app.config import settings
 from app.rag.vectorstore.qdrant_client import client
 
 
-COLLECTION_NAME = "iceberg_documents"
+COLLECTION_NAME = settings.collection_name
 
 
 def create_collection():

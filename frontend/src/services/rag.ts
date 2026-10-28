@@ -1,6 +1,10 @@
 import { RAGResponse } from "@/types/rag";
 
-// Send the user question to the backend RAG endpoint and return the grounded answer.
+/**
+ * Sends a user question to the backend RAG endpoint and returns the grounded answer.
+ *
+ * This is the primary frontend call used when a user asks a document-based question.
+ */
 export async function askIceberg(message: string): Promise<RAGResponse> {
   const response = await fetch(
     "http://localhost:8000/rag",

@@ -1,3 +1,9 @@
+"""RAG orchestration for retrieving relevant passages and grounding answers.
+
+This service connects vector search with Gemini generation so the model answers
+questions using the most relevant document context instead of generic knowledge.
+"""
+
 from app.rag.retrieval.search import search_documents
 
 from app.llm.gemini import model
@@ -6,6 +12,7 @@ from app.llm.gemini import stream_response
 
 
 def build_rag_prompt(query: str, search_results):
+    """Create a grounded prompt that includes retrieved document chunks as context."""
     # Combine the retrieved document chunks into one context block.
     # This lets the model answer using only the most relevant passages rather than guessing.
     context = "\n\n".join([result.payload["text"] for result in search_results])
@@ -30,6 +37,7 @@ Question:
 
 
 async def generate_rag_response(query: str, filename: str = None):
+    """Return a grounded answer and source references for a user query."""
     # Step 1: retrieve the most relevant document chunks from the vector store.
     search_results = search_documents(query=query, filename=filename)
 
@@ -58,6 +66,7 @@ async def generate_rag_response(query: str, filename: str = None):
 
 
 async def stream_rag_response(query: str):
+    """Stream a grounded answer to the client as Gemini produces response chunks."""
     # Step 1: fetch relevant document chunks for the query.
     search_results = search_documents(query)
 

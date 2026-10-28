@@ -1,13 +1,10 @@
-import os
-
-from dotenv import load_dotenv
-
 from qdrant_client import QdrantClient
 
-load_dotenv()
+from app.config import settings
 
 
 client = QdrantClient(
-    url=os.getenv("QDRANT_URL"),
-    api_key=os.getenv("QDRANT_API_KEY")
+    url=settings.qdrant_url,
+    api_key=settings.qdrant_api_key,
+    timeout=30,
 )
