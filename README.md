@@ -62,16 +62,16 @@ flowchart LR
 
 ## Tech stack
 
-| Layer | Stack |
-| --- | --- |
-| Frontend | Next.js, React, Tailwind CSS, shadcn/ui |
-| Backend | FastAPI, Python |
-| LLM | Google Gemini 2.5 Flash |
-| Retrieval | Qdrant, semantic search, BM25 |
-| Embeddings | SentenceTransformers |
-| PDF parsing | PyMuPDF |
-| Chunking | LangChain text splitters |
-| Streaming | SSE via sse-starlette |
+| Layer       | Stack                                   |
+| ----------- | --------------------------------------- |
+| Frontend    | Next.js, React, Tailwind CSS, shadcn/ui |
+| Backend     | FastAPI, Python                         |
+| LLM         | Google Gemini 2.5 Flash                 |
+| Retrieval   | Qdrant, semantic search, BM25           |
+| Embeddings  | SentenceTransformers                    |
+| PDF parsing | PyMuPDF                                 |
+| Chunking    | LangChain text splitters                |
+| Streaming   | SSE via sse-starlette                   |
 
 ---
 
@@ -219,10 +219,10 @@ The frontend will be available at:
 
 ## Environment variables
 
-| Variable | Required | Description |
-| --- | --- | --- |
-| `GEMINI_API_KEY` | Yes | API key for Google Gemini |
-| `QDRANT_URL` | Yes | Qdrant instance URL |
+| Variable         | Required      | Description                     |
+| ---------------- | ------------- | ------------------------------- |
+| `GEMINI_API_KEY` | Yes           | API key for Google Gemini       |
+| `QDRANT_URL`     | Yes           | Qdrant instance URL             |
 | `QDRANT_API_KEY` | Yes for cloud | API key when using Qdrant Cloud |
 
 ---
@@ -367,4 +367,3 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 ## Acknowledgements
 
 This project is built around modern retrieval-augmented generation patterns and uses open-source tooling for PDF parsing, chunking, embeddings, vector search, and model-based generation.
-
